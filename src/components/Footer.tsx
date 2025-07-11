@@ -33,9 +33,9 @@ const Footer = () => {
 
       <footer className="bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100 border-t border-gray-200">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Logo et description */}
-          <div className="lg:col-span-1">
+          <div>
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-xl">M</span>
@@ -94,10 +94,10 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact et paiement */}
+          {/* Contact */}
           <div>
             <h4 className="font-semibold text-lg mb-6 text-gray-900">Contact</h4>
-            <div className="space-y-4 mb-8">
+            <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                   <MapPin className="h-4 w-4 text-blue-600" />
@@ -117,55 +117,56 @@ const Footer = () => {
                 <span className="text-sm text-gray-600">contact@madamarket.mg</span>
               </div>
             </div>
+          </div>
 
-            <div>
-              <h5 className="font-semibold mb-6 text-gray-900">Moyens de paiement</h5>
-              
-              {/* Mobile Money */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-orange-200 hover:border-orange-300 transition-colors">
-                  <img 
-                    src={orangeMoneyLogo} 
-                    alt="Orange Money"
-                    className="h-8 w-8 object-contain"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Orange Money</span>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-red-200 hover:border-red-300 transition-colors">
-                  <img 
-                    src={airtelMoneyLogo} 
-                    alt="Airtel Money"
-                    className="h-8 w-8 object-contain"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Airtel Money</span>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors">
-                  <img 
-                    src={mvolaLogo} 
-                    alt="MVola"
-                    className="h-8 w-8 object-contain rounded"
-                  />
-                  <span className="text-sm font-medium text-gray-700">MVola</span>
-                </div>
-                
-                {/* Virement bancaire */}
-                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-blue-200 hover:border-blue-300 transition-colors">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
-                    <span className="text-white text-xs font-bold">VB</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">Virement bancaire</span>
-                </div>
+          {/* Moyens de paiement */}
+          <div>
+            <h4 className="font-semibold text-lg mb-6 text-gray-900">Moyens de paiement</h4>
+            
+            {/* Mobile Money */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-orange-200 hover:border-orange-300 transition-colors">
+                <img 
+                  src={orangeMoneyLogo} 
+                  alt="Orange Money"
+                  className="h-8 w-8 object-contain"
+                />
+                <span className="text-sm font-medium text-gray-700">Orange Money</span>
               </div>
               
-              <div className="mt-6 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="flex items-center space-x-2">
-                  <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                  <span className="text-xs text-emerald-700 font-medium">Paiements 100% sécurisés</span>
+              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-red-200 hover:border-red-300 transition-colors">
+                <img 
+                  src={airtelMoneyLogo} 
+                  alt="Airtel Money"
+                  className="h-8 w-8 object-contain"
+                />
+                <span className="text-sm font-medium text-gray-700">Airtel Money</span>
+              </div>
+              
+              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-green-200 hover:border-green-300 transition-colors">
+                <img 
+                  src={mvolaLogo} 
+                  alt="MVola"
+                  className="h-8 w-8 object-contain rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">MVola</span>
+              </div>
+              
+              {/* Virement bancaire */}
+              <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-blue-200 hover:border-blue-300 transition-colors">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+                  <span className="text-white text-xs font-bold">VB</span>
                 </div>
+                <span className="text-sm font-medium text-gray-700">Virement bancaire</span>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+              <div className="flex items-center space-x-2">
+                <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span className="text-xs text-emerald-700 font-medium">Paiements 100% sécurisés</span>
               </div>
             </div>
           </div>

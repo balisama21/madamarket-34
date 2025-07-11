@@ -1,6 +1,6 @@
 
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingCart } from "lucide-react";
 
@@ -26,7 +26,7 @@ const WishlistPage = () => {
         </div>
       </div>
       
-      <Footer />
+      
     </div>
   );
 };

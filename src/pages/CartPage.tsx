@@ -1,6 +1,6 @@
 
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Minus, Plus, Trash2 } from "lucide-react";
@@ -125,7 +125,7 @@ const CartPage = () => {
         </div>
       </div>
       
-      <Footer />
+      
     </div>
   );
 };
