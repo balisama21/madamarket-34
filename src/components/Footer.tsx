@@ -38,33 +38,31 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-lg mb-6 text-gray-900">MadaMarket</h4>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">M</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">M</span>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Produits de Madagascar</p>
-              </div>
+              <span className="text-sm text-gray-500">Produits de Madagascar</span>
             </div>
             
-            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+            <p className="text-gray-600 mb-4 text-sm leading-relaxed">
               La marketplace de référence pour tous les produits authentiques de Madagascar.
             </p>
             
-            <div className="flex items-center space-x-2 mb-6">
-              <span className="text-2xl">🇲🇬</span>
+            <div className="flex items-center space-x-2 mb-4">
+              <span className="text-xl">🇲🇬</span>
               <span className="text-sm text-gray-500">Fier d'être malgache</span>
             </div>
 
             {/* Réseaux sociaux */}
             <div className="flex space-x-3">
-              <a href="#" className="w-10 h-10 bg-gray-50 hover:bg-blue-50 rounded-full flex items-center justify-center transition-colors group">
-                <Facebook className="h-5 w-5 text-gray-600 group-hover:text-blue-600" />
+              <a href="#" className="w-8 h-8 bg-gray-50 hover:bg-blue-50 rounded-full flex items-center justify-center transition-colors group">
+                <Facebook className="h-4 w-4 text-gray-600 group-hover:text-blue-600" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-50 hover:bg-pink-50 rounded-full flex items-center justify-center transition-colors group">
-                <Instagram className="h-5 w-5 text-gray-600 group-hover:text-pink-600" />
+              <a href="#" className="w-8 h-8 bg-gray-50 hover:bg-pink-50 rounded-full flex items-center justify-center transition-colors group">
+                <Instagram className="h-4 w-4 text-gray-600 group-hover:text-pink-600" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-50 hover:bg-blue-50 rounded-full flex items-center justify-center transition-colors group">
-                <Twitter className="h-5 w-5 text-gray-600 group-hover:text-blue-400" />
+              <a href="#" className="w-8 h-8 bg-gray-50 hover:bg-blue-50 rounded-full flex items-center justify-center transition-colors group">
+                <Twitter className="h-4 w-4 text-gray-600 group-hover:text-blue-400" />
               </a>
             </div>
           </div>
@@ -97,22 +95,22 @@ const Footer = () => {
           {/* Contact */}
           <div>
             <h4 className="font-semibold text-lg mb-6 text-gray-900">Contact</h4>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <MapPin className="h-4 w-4 text-blue-600" />
+                <div className="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <MapPin className="h-3 w-3 text-blue-600" />
                 </div>
                 <span className="text-sm text-gray-600">Antananarivo, Madagascar</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Phone className="h-4 w-4 text-blue-600" />
+                <div className="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Phone className="h-3 w-3 text-blue-600" />
                 </div>
                 <span className="text-sm text-gray-600">+261 34 12 345 67</span>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Mail className="h-4 w-4 text-blue-600" />
+                <div className="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Mail className="h-3 w-3 text-blue-600" />
                 </div>
                 <span className="text-sm text-gray-600">contact@madamarket.mg</span>
               </div>
@@ -123,13 +121,12 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-lg mb-6 text-gray-900">Moyens de paiement</h4>
             
-            {/* Mobile Money */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center space-x-2 p-2 bg-white rounded-lg border border-orange-200 hover:border-orange-300 transition-colors">
                 <img 
                   src={orangeMoneyLogo} 
                   alt="Orange Money"
-                  className="h-6 w-6 object-contain"
+                  className="h-5 w-5 object-contain"
                 />
                 <span className="text-xs font-medium text-gray-700">Orange Money</span>
               </div>
@@ -138,7 +135,7 @@ const Footer = () => {
                 <img 
                   src={airtelMoneyLogo} 
                   alt="Airtel Money"
-                  className="h-6 w-6 object-contain"
+                  className="h-5 w-5 object-contain"
                 />
                 <span className="text-xs font-medium text-gray-700">Airtel Money</span>
               </div>
@@ -147,20 +144,19 @@ const Footer = () => {
                 <img 
                   src={mvolaLogo} 
                   alt="MVola"
-                  className="h-6 w-6 object-contain rounded"
+                  className="h-5 w-5 object-contain rounded"
                 />
                 <span className="text-xs font-medium text-gray-700">MVola</span>
               </div>
               
-              {/* Virement bancaire */}
               <div className="flex items-center space-x-2 p-2 bg-white rounded-lg border border-blue-200 hover:border-blue-300 transition-colors">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-5 h-5 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
                   <span className="text-white text-xs font-bold">VB</span>
                 </div>
                 <span className="text-xs font-medium text-gray-700">Virement bancaire</span>
               </div>
               
-              <div className="mt-4 p-2 bg-emerald-50 rounded-lg border border-emerald-200">
+              <div className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-200">
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>
