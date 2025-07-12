@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, ShoppingCart, User, Heart, MessageCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,22 @@ import { Input } from "@/components/ui/input";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [language, setLanguage] = useState("FR");
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const languages = [
     { code: "FR", name: "Français" },
     { code: "MG", name: "Malagasy" },
     { code: "EN", name: "English" }
   ];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-100">
@@ -53,18 +63,21 @@ const Header = () => {
 
           {/* Search bar */}
           <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <Input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Rechercher des produits malgaches..."
                 className="w-full pl-4 pr-12 py-3 border border-gray-200 rounded-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
               <Button 
+                type="submit"
                 className="absolute right-1 top-1 h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 p-0"
               >
                 <Search className="h-4 w-4" />
               </Button>
-            </div>
+            </form>
           </div>
 
           {/* Navigation icons */}
@@ -115,16 +128,21 @@ const Header = () => {
 
         {/* Mobile search */}
         <div className="md:hidden pb-4">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <Input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher..."
               className="w-full pl-4 pr-12 py-3 border border-gray-200 rounded-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
-            <Button className="absolute right-1 top-1 h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 p-0">
+            <Button 
+              type="submit"
+              className="absolute right-1 top-1 h-8 w-8 rounded-full bg-blue-600 hover:bg-blue-700 p-0"
+            >
               <Search className="h-4 w-4" />
             </Button>
-          </div>
+          </form>
         </div>
       </div>
     </header>
