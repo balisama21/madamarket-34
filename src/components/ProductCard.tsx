@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Star, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProductCardProps {
   id: string;
@@ -23,15 +24,70 @@ const ProductCard = ({
   id, title, price, currency, image, seller, rating, reviewCount, category, downloads, isWishlisted = false 
 }: ProductCardProps) => {
   const [wishlisted, setWishlisted] = useState(isWishlisted);
+  const [addingToCart, setAddingToCart] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    toast({
-      title: "Ajouté au panier",
-      description: `${title} a été ajouté à votre panier.`,
-    });
+    
+    // Check if user is logged in
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour ajouter des produits au panier.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToCart(true);
+
+    try {
+      // Try to insert or update cart item
+      const { data, error } = await supabase
+        .from("cart_items")
+        .upsert(
+          {
+            user_id: user.id,
+            product_id: id,
+            quantity: 1
+          },
+          {
+            onConflict: "user_id,product_id",
+            ignoreDuplicates: false
+          }
+        )
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Erreur lors de l'ajout au panier:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'ajouter le produit au panier.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Ajouté au panier",
+        description: `${title} a été ajouté à votre panier.`,
+      });
+
+    } catch (error) {
+      console.error("Erreur lors de l'ajout au panier:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -112,9 +168,10 @@ const ProductCard = ({
           <Button 
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
             onClick={handleAddToCart}
+            disabled={addingToCart}
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Ajouter au panier
+            {addingToCart ? "Ajout..." : "Ajouter au panier"}
           </Button>
           <Button 
             variant="outline" 
