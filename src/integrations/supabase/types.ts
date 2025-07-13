@@ -49,6 +49,47 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          product_id: string | null
+          receiver_id: string | null
+          sender_id: string | null
+          subject: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          product_id?: string | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          subject?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          product_id?: string | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -129,6 +170,7 @@ export type Database = {
       }
       products: {
         Row: {
+          categories: string[] | null
           category: string
           created_at: string
           currency: string
@@ -136,14 +178,17 @@ export type Database = {
           downloads: number | null
           id: string
           image: string | null
+          images: string[] | null
           price: number
           rating: number | null
           review_count: number | null
           seller: string
+          seller_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          categories?: string[] | null
           category: string
           created_at?: string
           currency?: string
@@ -151,14 +196,17 @@ export type Database = {
           downloads?: number | null
           id?: string
           image?: string | null
+          images?: string[] | null
           price: number
           rating?: number | null
           review_count?: number | null
           seller: string
+          seller_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          categories?: string[] | null
           category?: string
           created_at?: string
           currency?: string
@@ -166,14 +214,54 @@ export type Database = {
           downloads?: number | null
           id?: string
           image?: string | null
+          images?: string[] | null
           price?: number
           rating?: number | null
           review_count?: number | null
           seller?: string
+          seller_id?: string | null
           title?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

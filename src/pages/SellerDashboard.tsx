@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import AddProductDialog from "@/components/AddProductDialog";
+import MessagesInbox from "@/components/MessagesInbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -139,6 +140,7 @@ const SellerDashboard = () => {
           <TabsList>
             <TabsTrigger value="products">Mes produits</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="analytics">Analyses</TabsTrigger>
           </TabsList>
           
@@ -160,7 +162,7 @@ const SellerDashboard = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-thin">
                     {products.map((product) => (
                       <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
@@ -212,9 +214,13 @@ const SellerDashboard = () => {
                 <CardTitle>Commandes récentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Aucune commande récente.</p>
+                <p className="text-muted-foreground">Aucune commande récente.</p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <MessagesInbox />
           </TabsContent>
           
           <TabsContent value="analytics">
@@ -223,7 +229,7 @@ const SellerDashboard = () => {
                 <CardTitle>Analyses des ventes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Graphiques et analyses à venir.</p>
+                <p className="text-muted-foreground">Graphiques et analyses à venir.</p>
               </CardContent>
             </Card>
           </TabsContent>
