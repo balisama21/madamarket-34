@@ -172,43 +172,55 @@ const Header = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
             <div className="flex flex-col md:flex-row md:items-center md:space-x-8 space-y-2 md:space-y-0">
               <button 
-                onClick={() => handleCategoryClick('alimentation')} 
+                onClick={() => handleCategoryClick('Électronique')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Électronique
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('Mode')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Mode
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('Alimentation')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Alimentation
               </button>
               <button 
-                onClick={() => handleCategoryClick('artisanat')} 
+                onClick={() => handleCategoryClick('Artisanat')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Artisanat
               </button>
               <button 
-                onClick={() => handleCategoryClick('textiles')} 
+                onClick={() => handleCategoryClick('Textiles')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Textiles
               </button>
               <button 
-                onClick={() => handleCategoryClick('beaute')} 
+                onClick={() => handleCategoryClick('Beauté')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Beauté
               </button>
               <button 
-                onClick={() => handleCategoryClick('epices')} 
+                onClick={() => handleCategoryClick('Épices')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Épices
               </button>
               <button 
-                onClick={() => handleCategoryClick('bijoux')} 
+                onClick={() => handleCategoryClick('Bijoux')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Bijoux
               </button>
               <button 
-                onClick={() => handleCategoryClick('decoration')} 
+                onClick={() => handleCategoryClick('Décoration')} 
                 className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
               >
                 Décoration

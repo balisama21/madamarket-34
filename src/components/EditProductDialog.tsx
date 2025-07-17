@@ -20,9 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Edit } from "lucide-react";
+import { Edit, Upload, X, Image } from "lucide-react";
 
 interface Product {
   id: string;
@@ -31,6 +32,7 @@ interface Product {
   price: number;
   currency: string;
   image: string | null;
+  images: string[] | null;
   seller: string;
   category: string;
   rating: number | null;
@@ -48,14 +50,19 @@ interface EditProductDialogProps {
 const categories = [
   "Électronique",
   "Mode",
-  "Maison & Jardin",
-  "Sport & Loisirs",
-  "Beauté & Santé",
+  "Alimentation",
+  "Artisanat",
+  "Textiles",
+  "Beauté",
+  "Épices",
+  "Bijoux",
+  "Décoration",
+  "Musique",
   "Livres",
-  "Automobile",
-  "Services",
-  "Immobilier",
-  "Emploi"
+  "Jouets",
+  "Maison",
+  "Sport",
+  "Autre"
 ];
 
 const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps) => {
@@ -67,6 +74,7 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
     currency: product.currency,
     category: product.category,
     image: product.image || "",
+    newImages: [] as File[],
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -79,6 +87,7 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
       currency: product.currency,
       category: product.category,
       image: product.image || "",
+      newImages: [],
     });
   }, [product]);
 
@@ -86,6 +95,32 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const maxImages = 5;
+    
+    if (formData.newImages.length + files.length > maxImages) {
+      toast({
+        title: "Erreur",
+        description: `Maximum ${maxImages} images autorisées.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      newImages: [...prev.newImages, ...files].slice(0, maxImages)
+    }));
+  };
+
+  const removeNewImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      newImages: prev.newImages.filter((_, i) => i !== index)
     }));
   };
 
@@ -114,6 +149,35 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
     setLoading(true);
 
     try {
+      // Upload new images if any
+      let newImageUrls: string[] = [];
+      
+      for (const imageFile of formData.newImages) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          console.error("Erreur upload image:", uploadError);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+        
+        newImageUrls.push(publicUrl);
+      }
+
+      // Combine existing images with new ones
+      const existingImages = product.images || [];
+      const allImages = [...existingImages, ...newImageUrls];
+      const mainImage = formData.image.trim() || newImageUrls[0] || existingImages[0] || null;
+
       const { error } = await supabase
         .from("products")
         .update({
@@ -122,7 +186,8 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
           price: price,
           currency: formData.currency,
           category: formData.category,
-          image: formData.image.trim() || null,
+          image: mainImage,
+          images: allImages,
           updated_at: new Date().toISOString(),
         })
         .eq("id", product.id);
@@ -163,15 +228,17 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Modifier le produit</DialogTitle>
           <DialogDescription>
             Modifiez les informations de votre produit ici.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+        
+        <ScrollArea className="max-h-[70vh] overflow-y-auto pr-4">
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Titre *</Label>
               <Input
@@ -247,7 +314,7 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="image">URL de l'image</Label>
+              <Label htmlFor="image">URL de l'image principale</Label>
               <Input
                 id="image"
                 value={formData.image}
@@ -256,22 +323,77 @@ const EditProductDialog = ({ product, onProductUpdated }: EditProductDialogProps
                 type="url"
               />
             </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="newImages">Ajouter de nouvelles photos (max 5)</Label>
+              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-muted-foreground/50 transition-colors">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <Image className="h-8 w-8 text-muted-foreground" />
+                  <div className="text-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('newImages')?.click()}
+                      className="mb-2"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Ajouter des images
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      PNG, JPG jusqu'à 5 images
+                    </p>
+                  </div>
+                </div>
+                <Input
+                  id="newImages"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+              
+              {formData.newImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  {formData.newImages.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-20 object-cover rounded-lg border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        onClick={() => removeNewImage(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setOpen(false)}
-              disabled={loading}
-            >
-              Annuler
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Mise à jour..." : "Mettre à jour"}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setOpen(false)}
+                disabled={loading}
+              >
+                Annuler
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Mise à jour..." : "Mettre à jour"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

@@ -33,18 +33,21 @@ const CategoryPage = () => {
   const { toast } = useToast();
 
   const categoryNames: { [key: string]: string } = {
-    "alimentation": "Alimentation",
-    "artisanat": "Artisanat", 
-    "textiles": "Textiles",
-    "beaute": "Beauté",
-    "epices": "Épices",
-    "decoration": "Décoration",
-    "bijoux": "Bijoux",
-    "musique": "Musique",
-    "livres": "Livres",
-    "jouets": "Jouets",
-    "electronique": "Électronique",
-    "maison": "Maison"
+    "Électronique": "Électronique",
+    "Mode": "Mode",
+    "Alimentation": "Alimentation",
+    "Artisanat": "Artisanat", 
+    "Textiles": "Textiles",
+    "Beauté": "Beauté",
+    "Épices": "Épices",
+    "Bijoux": "Bijoux",
+    "Décoration": "Décoration",
+    "Musique": "Musique",
+    "Livres": "Livres",
+    "Jouets": "Jouets",
+    "Maison": "Maison",
+    "Sport": "Sport",
+    "Autre": "Autre"
   };
 
   const fetchCategoryProducts = async () => {
