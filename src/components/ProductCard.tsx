@@ -30,6 +30,7 @@ const ProductCard = ({
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     // Check if user is logged in
     const { data: { user } } = await supabase.auth.getUser();
@@ -46,31 +47,49 @@ const ProductCard = ({
     setAddingToCart(true);
 
     try {
-      // Try to insert or update cart item
-      const { data, error } = await supabase
+      // Check if item already exists in cart
+      const { data: existingItem } = await supabase
         .from("cart_items")
-        .upsert(
-          {
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("product_id", id)
+        .maybeSingle();
+
+      if (existingItem) {
+        // Update quantity if item exists
+        const { error } = await supabase
+          .from("cart_items")
+          .update({ quantity: existingItem.quantity + 1 })
+          .eq("id", existingItem.id);
+
+        if (error) {
+          console.error("Erreur lors de la mise à jour du panier:", error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de mettre à jour le panier.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        // Insert new item
+        const { error } = await supabase
+          .from("cart_items")
+          .insert({
             user_id: user.id,
             product_id: id,
             quantity: 1
-          },
-          {
-            onConflict: "user_id,product_id",
-            ignoreDuplicates: false
-          }
-        )
-        .select()
-        .single();
+          });
 
-      if (error) {
-        console.error("Erreur lors de l'ajout au panier:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'ajouter le produit au panier.",
-          variant: "destructive",
-        });
-        return;
+        if (error) {
+          console.error("Erreur lors de l'ajout au panier:", error);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'ajouter le produit au panier.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       toast({
@@ -90,8 +109,21 @@ const ProductCard = ({
     }
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour ajouter aux favoris.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setWishlisted(!wishlisted);
     toast({
       title: wishlisted ? "Retiré des favoris" : "Ajouté aux favoris",
@@ -103,19 +135,25 @@ const ProductCard = ({
 
   const handlePreview = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    navigate(`/product/${id}`);
+  };
+
+  const handleCardClick = () => {
     navigate(`/product/${id}`);
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group">
+    <div 
+      className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="relative">
-        <Link to={`/product/${id}`}>
-          <img 
-            src={image} 
-            alt={title}
-            className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </Link>
+        <img 
+          src={image} 
+          alt={title}
+          className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+        />
         <Button 
           size="sm"
           variant="ghost"
@@ -130,11 +168,9 @@ const ProductCard = ({
       </div>
       
       <div className="p-5">
-        <Link to={`/product/${id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors text-lg">
-            {title}
-          </h3>
-        </Link>
+        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors text-lg">
+          {title}
+        </h3>
         
         <div className="flex items-center mb-3">
           <div className="flex items-center">
@@ -159,7 +195,11 @@ const ProductCard = ({
         </div>
         
         <div className="flex items-center justify-between mb-4">
-          <Link to={`/seller/${seller}`} className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+          <Link 
+            to={`/seller/${seller}`} 
+            className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
             Par {seller}
           </Link>
         </div>

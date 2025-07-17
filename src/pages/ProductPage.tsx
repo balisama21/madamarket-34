@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import ProductReviews from "@/components/ProductReviews";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, ShoppingCart, Heart, Share2, MessageCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Product {
   id: string;
@@ -33,6 +33,9 @@ const ProductPage = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
+  const { toast } = useToast();
 
   const fetchProduct = async () => {
     if (!id) return;
@@ -54,6 +57,108 @@ const ProductPage = () => {
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour ajouter des produits au panier.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToCart(true);
+
+    try {
+      const { data: existingItem } = await supabase
+        .from("cart_items")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("product_id", product.id)
+        .maybeSingle();
+
+      if (existingItem) {
+        const { error } = await supabase
+          .from("cart_items")
+          .update({ quantity: existingItem.quantity + 1 })
+          .eq("id", existingItem.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("cart_items")
+          .insert({
+            user_id: user.id,
+            product_id: product.id,
+            quantity: 1
+          });
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Ajouté au panier",
+        description: `${product.title} a été ajouté à votre panier.`,
+      });
+
+    } catch (error) {
+      console.error("Erreur lors de l'ajout au panier:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le produit au panier.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleWishlist = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour ajouter aux favoris.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setWishlisted(!wishlisted);
+    toast({
+      title: wishlisted ? "Retiré des favoris" : "Ajouté aux favoris",
+      description: wishlisted 
+        ? `${product?.title} a été retiré de vos favoris.`
+        : `${product?.title} a été ajouté à vos favoris.`,
+    });
+  };
+
+  const handleShare = async () => {
+    if (navigator.share && product) {
+      try {
+        await navigator.share({
+          title: product.title,
+          text: product.description || 'Découvrez ce produit sur notre marketplace',
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log('Erreur lors du partage:', error);
+      }
+    } else {
+      // Fallback: copier l'URL
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Lien copié",
+        description: "Le lien du produit a été copié dans le presse-papiers.",
+      });
     }
   };
 
@@ -178,14 +283,19 @@ const ProductPage = () => {
             </Card>
             
             <div className="flex gap-4">
-              <Button size="lg" className="flex-1">
+              <Button 
+                size="lg" 
+                className="flex-1"
+                onClick={handleAddToCart}
+                disabled={addingToCart}
+              >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                Ajouter au panier
+                {addingToCart ? "Ajout..." : "Ajouter au panier"}
               </Button>
-              <Button variant="outline" size="lg">
-                <Heart className="h-5 w-5" />
+              <Button variant="outline" size="lg" onClick={handleWishlist}>
+                <Heart className={`h-5 w-5 ${wishlisted ? 'fill-current text-pink-500' : ''}`} />
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={handleShare}>
                 <Share2 className="h-5 w-5" />
               </Button>
             </div>

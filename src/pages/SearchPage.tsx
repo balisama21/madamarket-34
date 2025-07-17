@@ -1,54 +1,91 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import { Search, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Search, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Product {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   price: number;
   currency: string;
-  image: string;
+  image: string | null;
+  images: string[] | null;
   seller: string;
+  seller_id: string | null;
   category: string;
-  rating: number;
-  review_count: number;
-  downloads: number;
+  categories: string[] | null;
+  rating: number | null;
+  review_count: number | null;
+  downloads: number | null;
+  created_at: string;
+  updated_at: string;
 }
 
 const SearchPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const { toast } = useToast();
 
-  const searchProducts = async (query: string) => {
-    if (!query.trim()) {
-      setProducts([]);
-      return;
-    }
+  const categories = [
+    { value: "all", label: "Toutes les catégories" },
+    { value: "alimentation", label: "Alimentation" },
+    { value: "artisanat", label: "Artisanat" },
+    { value: "textiles", label: "Textiles" },
+    { value: "beaute", label: "Beauté" },
+    { value: "epices", label: "Épices" },
+    { value: "decoration", label: "Décoration" },
+    { value: "bijoux", label: "Bijoux" },
+    { value: "musique", label: "Musique" },
+    { value: "livres", label: "Livres" },
+    { value: "jouets", label: "Jouets" },
+    { value: "electronique", label: "Électronique" },
+    { value: "maison", label: "Maison" }
+  ];
 
+  const searchProducts = async (query: string = searchQuery) => {
     setLoading(true);
+    
     try {
-      const { data, error } = await supabase
+      let queryBuilder = supabase
         .from("products")
         .select("*")
-        .or(`title.ilike.%${query}%, description.ilike.%${query}%, category.ilike.%${query}%`)
         .order("created_at", { ascending: false });
 
+      // Recherche par titre ou description
+      if (query.trim()) {
+        queryBuilder = queryBuilder.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+      }
+
+      // Filtrer par catégorie
+      if (selectedCategory !== "all") {
+        queryBuilder = queryBuilder.eq("category", selectedCategory);
+      }
+
+      // Filtrer par prix
+      queryBuilder = queryBuilder
+        .gte("price", priceRange[0])
+        .lte("price", priceRange[1]);
+
+      const { data, error } = await queryBuilder;
+
       if (error) {
-        console.error("Error searching products:", error);
+        console.error("Erreur lors de la recherche:", error);
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors de la recherche.",
+          description: "Impossible d'effectuer la recherche.",
           variant: "destructive",
         });
         return;
@@ -56,10 +93,10 @@ const SearchPage = () => {
 
       setProducts(data || []);
     } catch (error) {
-      console.error("Error searching products:", error);
+      console.error("Erreur lors de la recherche:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la recherche.",
+        description: "Une erreur inattendue s'est produite.",
         variant: "destructive",
       });
     } finally {
@@ -68,131 +105,136 @@ const SearchPage = () => {
   };
 
   useEffect(() => {
+    searchProducts();
+  }, [selectedCategory, priceRange]);
+
+  useEffect(() => {
     const query = searchParams.get("q");
     if (query) {
       setSearchQuery(query);
       searchProducts(query);
+    } else {
+      searchProducts("");
     }
   }, [searchParams]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      setSearchParams({ q: searchQuery });
-      searchProducts(searchQuery);
-    }
+    searchProducts();
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
-        {/* Search Form */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <form onSubmit={handleSearch} className="relative">
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher des produits..."
-              className="w-full pl-4 pr-12 py-4 text-lg border border-gray-200 rounded-full focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
-            <Button 
-              type="submit"
-              className="absolute right-2 top-2 h-10 w-10 rounded-full bg-blue-600 hover:bg-blue-700 p-0"
-            >
-              <Search className="h-5 w-5" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Rechercher des produits</h1>
+          
+          <form onSubmit={handleSearch} className="flex gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                type="text"
+                placeholder="Rechercher des produits..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Recherche..." : "Rechercher"}
             </Button>
           </form>
         </div>
 
-        {/* Search Results Header */}
-        {searchParams.get("q") && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Résultats pour "{searchParams.get("q")}"
-                </h1>
-                <p className="text-gray-600">
-                  {loading ? "Recherche en cours..." : `${products.length} produit${products.length > 1 ? 's' : ''} trouvé${products.length > 1 ? 's' : ''}`}
-                </p>
-              </div>
-              <Button variant="outline" className="flex items-center space-x-2">
-                <Filter className="h-4 w-4" />
-                <span>Filtres</span>
-              </Button>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Filtres */}
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-4 flex items-center">
+                  <Filter className="h-5 w-5 mr-2" />
+                  Filtres
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Catégorie</label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full p-2 border rounded-lg"
+                    >
+                      {categories.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Prix (Ar)</label>
+                    <div className="space-y-2">
+                      <Input
+                        type="number"
+                        placeholder="Prix minimum"
+                        value={priceRange[0]}
+                        onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Prix maximum"
+                        value={priceRange[1]}
+                        onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        )}
-
-        {/* No Results */}
-        {!loading && searchParams.get("q") && products.length === 0 && (
-          <div className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Aucun produit trouvé
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Aucun résultat pour "{searchParams.get("q")}". Essayez avec d'autres mots-clés.
+          {/* Résultats */}
+          <div className="lg:col-span-3">
+            <div className="mb-4">
+              <p className="text-gray-600">
+                {loading ? "Recherche en cours..." : `${products.length} produit(s) trouvé(s)`}
               </p>
-              <div className="space-y-2 text-sm text-gray-500">
-                <p>Suggestions :</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Vérifiez l'orthographe</li>
-                  <li>Utilisez des mots-clés plus généraux</li>
-                  <li>Essayez des synonymes</li>
-                </ul>
-              </div>
             </div>
-          </div>
-        )}
 
-        {/* Products Grid */}
-        {!loading && products.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                title={product.title}
-                price={product.price}
-                currency={product.currency}
-                image={product.image}
-                seller={product.seller}
-                rating={product.rating}
-                reviewCount={product.review_count}
-                category={product.category}
-                downloads={product.downloads}
-                isWishlisted={false}
-              />
-            ))}
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Aucun produit trouvé pour votre recherche.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    title={product.title}
+                    price={product.price}
+                    currency={product.currency}
+                    image={product.image || product.images?.[0] || "/placeholder.svg"}
+                    seller={product.seller}
+                    rating={product.rating || 0}
+                    reviewCount={product.review_count || 0}
+                    category={product.category}
+                    downloads={product.downloads || 0}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Empty State */}
-        {!searchParams.get("q") && (
-          <div className="text-center py-12">
-            <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Recherchez des produits
-            </h3>
-            <p className="text-gray-600">
-              Utilisez la barre de recherche ci-dessus pour trouver des produits.
-            </p>
-          </div>
-        )}
-      </main>
-
+        </div>
+      </div>
+      
       <Footer />
     </div>
   );

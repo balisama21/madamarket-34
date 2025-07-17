@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -6,11 +7,35 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Menu, X, ChevronDown, ChevronUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Product {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  currency: string;
+  image: string | null;
+  images: string[] | null;
+  seller: string;
+  seller_id: string | null;
+  category: string;
+  categories: string[] | null;
+  rating: number | null;
+  review_count: number | null;
+  downloads: number | null;
+  created_at: string;
+  updated_at: string;
+}
 
 const Index = () => {
   const [showCategories, setShowCategories] = useState(false);
   const [showCategoriesInHero, setShowCategoriesInHero] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,81 +46,40 @@ const Index = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Données de démonstration pour tous types de produits
-  const featuredProducts = [
-    {
-      id: "1",
-      title: "Riz Makalioka Premium - Sac 25kg",
-      price: 85000,
-      currency: "Ar",
-      image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop",
-      seller: "RizMada",
-      rating: 4.8,
-      reviewCount: 324,
-      category: "Alimentation",
-      downloads: 0
-    },
-    {
-      id: "2", 
-      title: "Artisanat Malagasy - Panier traditionnel",
-      price: 45000,
-      currency: "Ar",
-      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=300&fit=crop",
-      seller: "ArtisanMG",
-      rating: 4.9,
-      reviewCount: 156,
-      category: "Artisanat",
-      downloads: 0
-    },
-    {
-      id: "3",
-      title: "Huile essentielle Ravintsara - 30ml",
-      price: 35000,
-      currency: "Ar", 
-      image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=300&fit=crop",
-      seller: "NatureMada",
-      rating: 4.7,
-      reviewCount: 203,
-      category: "Santé & Beauté",
-      downloads: 0
-    },
-    {
-      id: "4",
-      title: "Textile Lamba Mena authentique",
-      price: 120000,
-      currency: "Ar",
-      image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=300&fit=crop", 
-      seller: "TextileMG",
-      rating: 4.9,
-      reviewCount: 89,
-      category: "Mode & Textile",
-      downloads: 0
-    },
-    {
-      id: "5",
-      title: "Café Arabica des Hauts Plateaux - 1kg",
-      price: 28000,
-      currency: "Ar",
-      image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop", 
-      seller: "CaféMada",
-      rating: 4.6,
-      reviewCount: 267,
-      category: "Alimentation",
-      downloads: 0
-    },
-    {
-      id: "6",
-      title: "Sculpture en bois de rose - Zébu miniature",
-      price: 65000,
-      currency: "Ar",
-      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=300&fit=crop", 
-      seller: "SculptureMG",
-      rating: 4.8,
-      reviewCount: 134,
-      category: "Décoration",
-      downloads: 0
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (error) {
+        console.error("Erreur lors du chargement des produits:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les produits.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProducts(data || []);
+    } catch (error) {
+      console.error("Erreur lors du chargement des produits:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const categories = [
     { name: "Alimentation", icon: "🍚", count: "2,340", color: "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100", slug: "alimentation" },
@@ -155,7 +139,7 @@ const Index = () => {
               {/* Statistiques compactes */}
               <div className="flex gap-6 pt-4">
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">12,500+</div>
+                  <div className="text-2xl font-bold text-blue-600">{products.length || 0}+</div>
                   <div className="text-sm text-gray-500">Produits</div>
                 </div>
                 <div>
@@ -215,17 +199,48 @@ const Index = () => {
             <p className="text-gray-600">Les meilleurs produits sélectionnés pour vous</p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
-          
-          <div className="text-center mt-10">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-lg font-semibold">
-              Voir tous les produits
-            </Button>
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 mb-4">Aucun produit disponible pour le moment.</p>
+              <Link to="/seller-dashboard">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Ajouter le premier produit
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    id={product.id}
+                    title={product.title}
+                    price={product.price}
+                    currency={product.currency}
+                    image={product.image || product.images?.[0] || "/placeholder.svg"}
+                    seller={product.seller}
+                    rating={product.rating || 0}
+                    reviewCount={product.review_count || 0}
+                    category={product.category}
+                    downloads={product.downloads || 0}
+                  />
+                ))}
+              </div>
+              
+              <div className="text-center mt-10">
+                <Link to="/search">
+                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-lg font-semibold">
+                    Voir tous les produits
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -241,7 +256,7 @@ const Index = () => {
           </Button>
           
           {showCategories && (
-            <div className="absolute bottom-16 right-0 w-72 bg-white rounded-lg shadow-xl border p-4 max-h-96 overflow-y-auto">
+            <div className="absolute bottom-16 right-0 w-72 bg-white rounded-lg shadow-xl border p-4 max-h-96 overflow-y-auto scrollbar-thin">
               <h3 className="font-bold text-gray-900 mb-3">Catégories</h3>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map((category) => (
