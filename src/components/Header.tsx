@@ -1,15 +1,19 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, User, Heart, MessageCircle, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, User, Heart, MessageCircle, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [language, setLanguage] = useState("FR");
   const [searchQuery, setSearchQuery] = useState("");
+  const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const languages = [
     { code: "FR", name: "Français" },
@@ -17,11 +21,46 @@ const Header = () => {
     { code: "EN", name: "English" }
   ];
 
+  useEffect(() => {
+    // Check current session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+    };
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
+    }
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de se déconnecter",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous êtes maintenant déconnecté",
+      });
+      navigate("/");
     }
   };
 
@@ -94,9 +133,29 @@ const Header = () => {
               <ShoppingCart className="h-5 w-5 text-gray-600" />
               <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">3</span>
             </Link>
-            <Link to="/profile" className="p-3 hover:bg-gray-50 rounded-full transition-colors">
-              <User className="h-5 w-5 text-gray-600" />
-            </Link>
+            
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Link to="/profile" className="p-3 hover:bg-gray-50 rounded-full transition-colors">
+                  <User className="h-5 w-5 text-gray-600" />
+                </Link>
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 hover:bg-gray-50 rounded-full transition-colors"
+                >
+                  <LogOut className="h-4 w-4 text-gray-600" />
+                </Button>
+              </div>
+            ) : (
+              <Link to="/auth">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full">
+                  Connexion
+                </Button>
+              </Link>
+            )}
+            
             <Button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2">
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
