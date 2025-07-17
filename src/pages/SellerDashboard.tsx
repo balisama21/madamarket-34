@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import AddProductDialog from "@/components/AddProductDialog";
+import EditProductDialog from "@/components/EditProductDialog";
 import MessagesInbox from "@/components/MessagesInbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Edit, Trash2, TrendingUp, Users, ShoppingBag } from "lucide-react";
+import { Eye, Trash2, TrendingUp, Users, ShoppingBag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: string;
@@ -30,6 +32,7 @@ const SellerDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const stats = [
     { title: "Ventes totales", value: "1,250,000 Ar", icon: TrendingUp, color: "text-green-600" },
@@ -93,7 +96,6 @@ const SellerDashboard = () => {
         description: "Produit supprimé avec succès.",
       });
 
-      // Rafraîchir la liste
       fetchProducts();
     } catch (error) {
       console.error("Erreur lors de la suppression:", error);
@@ -103,6 +105,10 @@ const SellerDashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleViewProduct = (productId: string) => {
+    navigate(`/product/${productId}`);
   };
 
   useEffect(() => {
@@ -185,12 +191,17 @@ const SellerDashboard = () => {
                           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
                             Actif
                           </span>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewProduct(product.id)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <EditProductDialog 
+                            product={product} 
+                            onProductUpdated={fetchProducts} 
+                          />
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -235,8 +246,6 @@ const SellerDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
-      
-      
     </div>
   );
 };
