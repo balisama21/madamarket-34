@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -31,13 +31,14 @@ interface Product {
 }
 
 const SearchPage = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const categories = [
     { value: "all", label: "Toutes les catégories" },
@@ -120,7 +121,23 @@ const SearchPage = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    searchProducts();
+    // Update URL with search query
+    const newSearchParams = new URLSearchParams();
+    if (searchQuery.trim()) {
+      newSearchParams.set("q", searchQuery.trim());
+    }
+    setSearchParams(newSearchParams);
+    searchProducts(searchQuery);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    // If we're filtering by category, we can clear the search query from URL
+    if (category !== "all") {
+      const newSearchParams = new URLSearchParams();
+      newSearchParams.set("category", category);
+      setSearchParams(newSearchParams);
+    }
   };
 
   return (
@@ -129,7 +146,9 @@ const SearchPage = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Rechercher des produits</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            {searchQuery ? `Résultats pour "${searchQuery}"` : "Rechercher des produits"}
+          </h1>
           
           <form onSubmit={handleSearch} className="flex gap-4 mb-6">
             <div className="flex-1 relative">
@@ -163,7 +182,7 @@ const SearchPage = () => {
                     <label className="block text-sm font-medium mb-2">Catégorie</label>
                     <select
                       value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
                       className="w-full p-2 border rounded-lg"
                     >
                       {categories.map((category) => (
@@ -211,6 +230,18 @@ const SearchPage = () => {
             ) : products.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-600">Aucun produit trouvé pour votre recherche.</p>
+                <Button 
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("all");
+                    setSearchParams(new URLSearchParams());
+                    searchProducts("");
+                  }}
+                  className="mt-4"
+                  variant="outline"
+                >
+                  Voir tous les produits
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

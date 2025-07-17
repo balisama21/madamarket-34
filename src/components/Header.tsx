@@ -47,6 +47,11 @@ const Header = () => {
     }
   };
 
+  const handleCategoryClick = (category: string) => {
+    navigate(`/categories/${category}`);
+    setIsMenuOpen(false);
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -166,13 +171,48 @@ const Header = () => {
         <nav className={`${isMenuOpen ? 'block' : 'hidden'} md:block pb-4`}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
             <div className="flex flex-col md:flex-row md:items-center md:space-x-8 space-y-2 md:space-y-0">
-              <Link to="/categories/alimentation" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Alimentation</Link>
-              <Link to="/categories/artisanat" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Artisanat</Link>
-              <Link to="/categories/textiles" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Textiles</Link>
-              <Link to="/categories/beaute" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Beauté</Link>
-              <Link to="/categories/epices" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Épices</Link>
-              <Link to="/categories/bijoux" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Bijoux</Link>
-              <Link to="/categories/decoration" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Décoration</Link>
+              <button 
+                onClick={() => handleCategoryClick('alimentation')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Alimentation
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('artisanat')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Artisanat
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('textiles')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Textiles
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('beaute')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Beauté
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('epices')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Épices
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('bijoux')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Bijoux
+              </button>
+              <button 
+                onClick={() => handleCategoryClick('decoration')} 
+                className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm text-left"
+              >
+                Décoration
+              </button>
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
               <Link to="/seller-dashboard" className="text-gray-600 hover:text-blue-600 font-medium transition-colors text-sm">Espace Vendeur</Link>
